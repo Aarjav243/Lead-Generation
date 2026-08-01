@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lead Outreach Dashboard</title>
+  <style>
+    :root { color-scheme: light dark; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 2rem 1.25rem 4rem;
+      font: 15px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: #0f1115; color: #e7e9ee;
+    }
+    header { max-width: 900px; margin: 0 auto 1.5rem; }
+    h1 { font-size: 1.35rem; margin: 0 0 .25rem; }
+    .meta { color: #8b909c; font-size: .8rem; }
+    .dept { max-width: 900px; margin: 0 auto 2rem; }
+    .dept h2 {
+      font-size: .78rem; text-transform: uppercase; letter-spacing: .08em;
+      color: #8b909c; margin: 0 0 .6rem; font-weight: 600;
+    }
+    .cards { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+    .card {
+      background: #181b22; border: 1px solid #262a33; border-radius: 12px;
+      padding: 1.1rem 1.2rem;
+    }
+    .card.clickable { cursor: pointer; }
+    .card.clickable:hover { border-color: #3a4150; }
+    .card .city { font-size: 1.05rem; font-weight: 600; margin: 0 0 .9rem; text-transform: capitalize; display: flex; justify-content: space-between; align-items: center; }
+    .caret { color: #8b909c; font-size: .8rem; transition: transform .15s; }
+    .card.open .caret { transform: rotate(90deg); }
+    .leads { margin-top: .9rem; border-top: 1px solid #262a33; padding-top: .7rem; }
+    .lead { display: flex; justify-content: space-between; gap: .75rem; padding: .32rem 0; font-size: .84rem; border-bottom: 1px solid #20242c; }
+    .lead:last-child { border-bottom: none; }
+    .lead .name { color: #d6d9e0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .lead a { color: #60a5fa; text-decoration: none; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .lead a:hover { text-decoration: underline; }
+    .leads-none { color: #8b909c; font-size: .82rem; margin: 0; }
+    .row { display: flex; justify-content: space-between; align-items: baseline; padding: .3rem 0; }
+    .row .label { color: #9aa0ac; font-size: .86rem; }
+    .row .num { font-size: 1.25rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .num.total { color: #e7e9ee; }
+    .num.noweb { color: #f0b429; }
+    .num.msg { color: #34d399; }
+    .bar { height: 6px; border-radius: 6px; background: #262a33; margin-top: .8rem; overflow: hidden; }
+    .bar > span { display: block; height: 100%; background: #34d399; }
+    .barcap { color: #8b909c; font-size: .72rem; margin-top: .4rem; }
+    .err { color: #f87171; font-size: .85rem; }
+    .empty { max-width: 900px; margin: 0 auto; color: #8b909c; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Lead Outreach Dashboard</h1>
+    <div class="meta" id="meta">Loading…</div>
+  </header>
+  <main id="app"></main>
+
+  <script>
+    const app = document.getElementById("app");
+    const meta = document.getElementById("meta");
+    const open = new Set(); // "dept/city" keys currently expanded — survives polling
+
+    const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (m) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
+
+    function leadsList(contacted) {
+      if (!contacted || !contacted.length) return `<p class="leads-none">No contacted leads yet.</p>`;
+      return contacted.map((l) =>
+        `<div class="lead"><span class="name" title="${esc(l.title)}">${esc(l.title) || "(no name)"}</span>` +
+        `<a href="tel:+${esc(l.phone)}">+${esc(l.phone)}</a></div>`
+      ).join("");
+    }
+
+    function card(c) {
+      if (c.error) {
+        return `<div class="card"><p class="city">${esc(c.city)}</p>
+          <p class="err">⚠ ${esc(c.error)}</p></div>`;
+      }
+      const key = c.department + "/" + c.city;
+      const isOpen = open.has(key);
+      const pct = c.noWebsite ? Math.round((c.messaged / c.noWebsite) * 100) : 0;
+      return `<div class="card clickable${isOpen ? " open" : ""}" data-key="${esc(key)}">
+        <p class="city"><span>${esc(c.city)}</span><span class="caret">▶</span></p>
+        <div class="row"><span class="label">Total leads</span><span class="num total">${c.total}</span></div>
+        <div class="row"><span class="label">No website</span><span class="num noweb">${c.noWebsite}</span></div>
+        <div class="row"><span class="label">Messaged</span><span class="num msg">${c.messaged}</span></div>
+        <div class="bar"><span style="width:${pct}%"></span></div>
+        <div class="barcap">${c.messaged} of ${c.noWebsite} no-website leads contacted (${pct}%)</div>
+        ${isOpen ? `<div class="leads">${leadsList(c.contacted)}</div>` : ""}
+      </div>`;
+    }
+
+    function render(data) {
+      const stats = data.stats || [];
+      if (!stats.length) { app.innerHTML = `<p class="empty">No departments in manifest.</p>`; return; }
+      const byDept = {};
+      for (const s of stats) (byDept[s.department] ||= []).push(s);
+      app.innerHTML = Object.entries(byDept).map(([dept, cities]) =>
+        `<section class="dept"><h2>${esc(dept)}</h2><div class="cards">${cities.map(card).join("")}</div></section>`
+      ).join("");
+      const t = new Date(data.generatedAt);
+      meta.textContent = "Updated " + t.toLocaleTimeString() + " · auto-refreshes every 10s";
+    }
+
+    let lastData = null;
+    app.addEventListener("click", (e) => {
+      if (e.target.closest("a")) return; // let tel: links work without toggling
+      const el = e.target.closest(".card.clickable");
+      if (!el) return;
+      const key = el.dataset.key;
+      open.has(key) ? open.delete(key) : open.add(key);
+      if (lastData) render(lastData);
+    });
+
+    async function tick() {
+      try {
+        const r = await fetch("/api/stats");
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        lastData = await r.json();
+        render(lastData);
+      } catch (e) {
+        meta.textContent = "Connection lost — is dashboard-server.js running? (" + e.message + ")";
+      }
+    }
+
+    tick();
+    setInterval(tick, 10000);
+  </script>
+</body>
+</html>

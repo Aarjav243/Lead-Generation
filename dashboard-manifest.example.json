@@ -1,0 +1,9 @@
+{
+  "cafe": {
+    "austin": {
+      "leadsFile": "austin-cafes.csv",
+      "noWebsiteFile": "austin-cafes-no-website.csv",
+      "sentLogFile": "whatsapp-sent-log.csv"
+    }
+  }
+}
