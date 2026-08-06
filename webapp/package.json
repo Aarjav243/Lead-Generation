@@ -1,0 +1,13 @@
+{
+  "name": "leadflow",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "db": "wrangler d1 execute leadflow --local --file=schema.sql",
+    "selftest": "node src/selftest.mjs"
+  },
+  "dependencies": {
+    "csv-parse": "^7.0.1"
+  }
+}

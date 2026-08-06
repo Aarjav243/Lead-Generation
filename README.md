@@ -109,6 +109,13 @@ node scripts/dashboard-server.js   # http://127.0.0.1:8090
 The message file supports `{column}` placeholders matching your leads CSV's headers (e.g. `{title}`
 for the business name — see `examples/message-template.example.txt`).
 
+### What a lead already has online
+
+`scripts/lib/capability.js` fetches a lead's homepage and reports what they run **today** — `No website`,
+`No real website — Instagram page only`, `Website only — no online booking`, `Website + online booking`,
+`Full webapp — ordering, booking, delivery`, or `Website broken / dead`. No API key, no LLM. That one
+line tells you what there is to pitch. `node scripts/lib/capability.js --selftest` checks it offline.
+
 > ⚠️ **WhatsApp outreach is unsolicited messaging — use it carefully.** Sending bulk messages to
 > numbers you scraped (not people who opted in) can violate WhatsApp's Terms of Service (account ban
 > risk) and anti-spam law in your jurisdiction (e.g. TCPA in the US, TRAI regulations in India). Always
@@ -173,7 +180,9 @@ google-maps-scraper-kit/
 │   ├── enrich.py           ← optional AI enrichment (contact name/email/services via a lead's website)
 │   ├── whatsapp-send.js    ← optional WhatsApp outreach to a leads CSV
 │   ├── dashboard-server.js ← optional local dashboard (stdlib http server)
-│   └── lib/normalize-phone.js
+│   └── lib/
+│       ├── capability.js       ← what a lead already has online (website / booking / ordering)
+│       └── normalize-phone.js
 ├── dashboard/
 │   └── index.html          ← dashboard UI, served by dashboard-server.js
 ├── examples/

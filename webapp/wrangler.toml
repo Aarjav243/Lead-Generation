@@ -1,0 +1,16 @@
+name = "leadflow"
+main = "src/index.js"
+compatibility_date = "2025-09-01"
+compatibility_flags = ["nodejs_compat"]  # csv-parse needs Node's Buffer (leadgen-api.js CSV import)
+
+# Static UI. Anything not under /api/ is served from here; /api/ hits the Worker.
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+# database_id is a placeholder — `wrangler dev` / `--local` never reads it.
+# Replace with the real id from `wrangler d1 create leadflow` before deploying.
+[[d1_databases]]
+binding = "DB"
+database_name = "leadflow"
+database_id = "local-only-placeholder"

@@ -1,0 +1,82 @@
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: #0f1115; color: #e7e9ee;
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+a { color: inherit; text-decoration: none; }
+
+#topbar {
+  display: flex; align-items: center; gap: 1.5rem;
+  padding: .8rem 1.5rem; border-bottom: 1px solid #22262e; background: #14171d;
+}
+.brand { font-weight: 700; letter-spacing: .02em; }
+#nav { display: flex; gap: 1rem; flex: 1; }
+#nav a { color: #9aa0ac; padding: .2rem 0; border-bottom: 2px solid transparent; }
+#nav a.on, #nav a:hover { color: #e7e9ee; border-color: #34d399; }
+.who { color: #8b909c; font-size: .85rem; display: flex; gap: .6rem; align-items: center; }
+.link { background: none; border: none; color: #34d399; cursor: pointer; font: inherit; padding: 0; }
+
+main { padding: 1.5rem; max-width: 1200px; margin: 0 auto; }
+
+.login { max-width: 320px; margin: 12vh auto; display: flex; flex-direction: column; gap: .9rem; }
+.login h1 { margin: 0 0 .5rem; font-size: 1.4rem; }
+.login label { display: flex; flex-direction: column; gap: .3rem; font-size: .85rem; color: #9aa0ac; }
+input, select, textarea {
+  background: #1a1e26; border: 1px solid #2b303a; border-radius: 6px;
+  color: #e7e9ee; padding: .5rem .6rem; font: inherit; width: 100%;
+}
+input:focus, select:focus { outline: none; border-color: #34d399; }
+button[type="submit"] {
+  background: #34d399; color: #0f1115; border: none; border-radius: 6px;
+  padding: .55rem; font: inherit; font-weight: 600; cursor: pointer;
+}
+
+table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+th, td { text-align: left; padding: .5rem .6rem; border-bottom: 1px solid #22262e; }
+th { color: #8b909c; font-weight: 500; font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; }
+
+.err { color: #f87171; font-size: .85rem; margin: 0; }
+.empty { color: #8b909c; }
+
+/* Screens 1-3 (collections, lead table, converted leads) */
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+.tile {
+  text-align: left; background: #14171d; border: 1px solid #22262e; border-radius: 8px;
+  padding: 1rem; cursor: pointer; color: inherit; font: inherit;
+}
+.tile:hover { border-color: #34d399; }
+.tile h3 { margin: 0 0 .3rem; font-size: .95rem; }
+.tile p { margin: 0; color: #8b909c; font-size: .82rem; }
+
+.table-wrap { overflow-x: auto; }
+.table-wrap table { min-width: max-content; }
+tr.row-err { outline: 1px solid #f87171; }
+td .f-amount, td .f-total, td .f-payment { width: 6rem; }
+.f-area, .f-city, .f-state { min-width: 6rem; }
+.f-kind, .f-work-status { min-width: 9rem; }
+.f-description { margin-top: .3rem; min-width: 9rem; }
+.f-assignees { display: flex; flex-direction: column; gap: .2rem; font-size: .82rem; white-space: nowrap; min-width: 7rem; }
+.f-payment-cell { display: flex; gap: .3rem; align-items: center; white-space: nowrap; }
+
+/* --- Dashboard (D1-D4) --- */
+.dash-nav { display: flex; gap: .5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+.dash-tab {
+  background: #1a1e26; border: 1px solid #2b303a; border-radius: 6px; color: #9aa0ac;
+  padding: .45rem .8rem; font: inherit; cursor: pointer;
+}
+.dash-tab.on, .dash-tab:hover { color: #e7e9ee; border-color: #34d399; }
+.dash-body h3 { margin: 1.4rem 0 .6rem; font-size: 1rem; color: #e7e9ee; }
+.dash-body table { margin-bottom: .5rem; }
+.dash-picker { display: inline-flex; flex-direction: column; gap: .3rem; font-size: .85rem; color: #9aa0ac; width: auto; min-width: 200px; margin-bottom: 1rem; }
+.dash-picker-row { display: flex; gap: 1.2rem; }
+.sal-cell { display: flex; align-items: center; gap: .5rem; white-space: nowrap; }
+.sal-amount { width: 90px; }
+.sal-computed { color: #e7e9ee; min-width: 80px; display: inline-block; }
+.sal-toggle {
+  border: none; border-radius: 5px; padding: .3rem .6rem; font: inherit; font-size: .78rem;
+  cursor: pointer; font-weight: 600;
+}
+.sal-toggle.paid { background: #163a2b; color: #34d399; }
+.sal-toggle.unpaid { background: #3a1f1f; color: #f87171; }
+.deadline-input { width: auto; min-width: 140px; }
