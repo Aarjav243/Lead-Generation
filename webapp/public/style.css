@@ -32,9 +32,10 @@ button[type="submit"] {
   padding: .55rem; font: inherit; font-weight: 600; cursor: pointer;
 }
 
-table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: .9rem; }
 th, td { text-align: left; padding: .5rem .6rem; border-bottom: 1px solid #22262e; }
 th { color: #8b909c; font-weight: 500; font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; }
+thead th { position: sticky; top: 0; background: #0f1115; z-index: 1; }
 
 .err { color: #f87171; font-size: .85rem; margin: 0; }
 .empty { color: #8b909c; }
@@ -49,15 +50,21 @@ th { color: #8b909c; font-weight: 500; font-size: .78rem; text-transform: upperc
 .tile h3 { margin: 0 0 .3rem; font-size: .95rem; }
 .tile p { margin: 0; color: #8b909c; font-size: .82rem; }
 
-.table-wrap { overflow-x: auto; }
+/* overflow-x: auto forces overflow-y to compute as auto too (can't mix visible
+   with non-visible on one box), so this has to be a real bounded scroll panel
+   for the sticky thead to stick to anything — it can't stick to the page. */
+.table-wrap { overflow: auto; max-height: 70vh; }
 .table-wrap table { min-width: max-content; }
 tr.row-err { outline: 1px solid #f87171; }
-td .f-amount, td .f-total, td .f-payment { width: 6rem; }
+td .f-total, td .f-paid { width: 6rem; }
 .f-area, .f-city, .f-state { min-width: 6rem; }
 .f-kind, .f-work-status { min-width: 9rem; }
 .f-description { margin-top: .3rem; min-width: 9rem; }
-.f-assignees { display: flex; flex-direction: column; gap: .2rem; font-size: .82rem; white-space: nowrap; min-width: 7rem; }
-.f-payment-cell { display: flex; gap: .3rem; align-items: center; white-space: nowrap; }
+.f-owner-name, .f-timings, .f-service, .f-note, .f-meeting-link { min-width: 8rem; }
+/* Wraps instead of overflowing into the next cell (was white-space: nowrap,
+   which let long names bleed past the column when the table got squeezed). */
+.f-assignees { display: flex; flex-direction: column; gap: .2rem; font-size: .82rem; min-width: 7rem; max-width: 11rem; }
+.f-close-cell { display: flex; gap: .3rem; align-items: center; white-space: nowrap; }
 
 /* --- Dashboard (D1-D4) --- */
 .dash-nav { display: flex; gap: .5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
@@ -70,7 +77,7 @@ td .f-amount, td .f-total, td .f-payment { width: 6rem; }
 .dash-body table { margin-bottom: .5rem; }
 .dash-picker { display: inline-flex; flex-direction: column; gap: .3rem; font-size: .85rem; color: #9aa0ac; width: auto; min-width: 200px; margin-bottom: 1rem; }
 .dash-picker-row { display: flex; gap: 1.2rem; }
-.sal-cell { display: flex; align-items: center; gap: .5rem; white-space: nowrap; }
+.sal-cell-inner { display: flex; align-items: center; gap: .5rem; white-space: nowrap; }
 .sal-amount { width: 90px; }
 .sal-computed { color: #e7e9ee; min-width: 80px; display: inline-block; }
 .sal-toggle {
@@ -80,3 +87,11 @@ td .f-amount, td .f-total, td .f-payment { width: 6rem; }
 .sal-toggle.paid { background: #163a2b; color: #34d399; }
 .sal-toggle.unpaid { background: #3a1f1f; color: #f87171; }
 .deadline-input { width: auto; min-width: 140px; }
+
+.toast {
+  position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(12px);
+  background: #14171d; border: 1px solid #34d399; color: #e7e9ee; padding: .7rem 1.1rem;
+  border-radius: 8px; font-size: .88rem; opacity: 0; pointer-events: none;
+  transition: opacity .2s, transform .2s; z-index: 1000; box-shadow: 0 4px 16px rgba(0,0,0,.4);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }

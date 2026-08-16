@@ -4,10 +4,14 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
-    "db": "wrangler d1 execute leadflow --local --file=schema.sql",
+    "db": "npx wrangler d1 execute leadflow --local --file=schema.sql",
+    "seed:demo": "node seed-demo.mjs",
     "selftest": "node src/selftest.mjs"
   },
   "dependencies": {
     "csv-parse": "^7.0.1"
+  },
+  "devDependencies": {
+    "@reticlehq/react": "^2.5.0"
   }
 }

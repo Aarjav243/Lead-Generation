@@ -17,7 +17,15 @@
   <script src="/app.js"></script>
   <script src="/screens.js"></script>
   <script src="/dashboard.js"></script>
-  <script src="/generate.js"></script>
-  <script>LeadFlow.boot();</script>
+  <script>
+    // Reticle dev overlay disabled — uncomment to re-enable for agent-driven verification.
+    // if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+    //   const s = document.createElement("script");
+    //   s.type = "module";
+    //   s.src = "/_reticle-dev.js";
+    //   document.head.appendChild(s);
+    // }
+    LeadFlow.boot();
+  </script>
 </body>
 </html>

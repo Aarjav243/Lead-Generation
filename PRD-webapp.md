@@ -1,6 +1,13 @@
 # PRD — Lead Outreach & Delivery Webapp ("LeadFlow")
 
-**Status:** spec only — nothing built yet.
+> **SUPERSEDED (2026-08-11) by `PRD-webapp-v2.md`.** This file is now the record of *what was built*,
+> not what to build. v2 changes: flat 10% commission → slab table; `Pre-paid (advance received)`
+> conversion → outreach sets `Meeting finalized`, core closes the deal; in-app lead generation → removed
+> (generation runs locally through Claude, the deployed CRM does no scraping); core salary grid → removed.
+> Read v2 first; come back here only for the parts v2 doesn't touch.
+
+**Status:** BUILT and running locally. (This line originally read "spec only — nothing built yet" and
+was stale for weeks — the whole app exists under `webapp/`.)
 **Date:** 2026-08-04.
 **Supersedes** `PRD-dashboard.md` (that spec'd a read-only, no-auth, localhost 3-number dashboard;
 this replaces it with a multi-user app).

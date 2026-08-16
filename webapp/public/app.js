@@ -4,7 +4,7 @@ window.LeadFlow = (() => {
   const views = {};                       // name -> render(mountEl, user)
   const TABS = [
     { name: "collections", label: "Collections", core: false },
-    { name: "generate", label: "Generate Leads", core: true },
+    { name: "meetings", label: "Meetings Finalized", core: true },
     { name: "converted", label: "Converted Leads", core: true },
     { name: "dashboard", label: "Dashboard", core: true },
   ];
@@ -72,5 +72,18 @@ window.LeadFlow = (() => {
     user ? renderShell() : renderLogin();
   }
 
-  return { boot, api, esc, views };
+  // In-app confirmation banner (replaces native alert() for non-blocking success messages).
+  function toast(message) {
+    const el = document.createElement("div");
+    el.className = "toast";
+    el.textContent = message;
+    document.body.appendChild(el);
+    requestAnimationFrame(() => el.classList.add("show"));
+    setTimeout(() => {
+      el.classList.remove("show");
+      setTimeout(() => el.remove(), 300);
+    }, 3000);
+  }
+
+  return { boot, api, esc, views, toast };
 })();

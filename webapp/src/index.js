@@ -7,22 +7,22 @@
 //   Paths starting /api/core/ are CORE-TEAM ONLY. That prefix IS the permission.
 //   PUBLIC below is the only set of routes reachable without logging in.
 
-import { login, logout, seed, currentUser } from "./auth.js";
+import { login, logout, currentUser } from "./auth.js";
 import { routes as screenRoutes } from "./screens-api.js";
 import { routes as dashboardRoutes } from "./dashboard-api.js";
-import { routes as leadgenRoutes } from "./leadgen-api.js";
 
 const routes = {
   "POST /api/login": login,
   "POST /api/logout": logout,
-  "POST /api/seed": seed,
   "GET /api/session": ({ user }) => ({ user }),
   ...screenRoutes,
   ...dashboardRoutes,
-  ...leadgenRoutes,
 };
 
-const PUBLIC = new Set(["POST /api/login", "POST /api/seed", "GET /api/session"]);
+// No seed route on purpose: it was public (it only refuses once users exist), so
+// on a fresh deploy the first caller would receive all 16 passwords. Accounts go
+// straight into D1 from SQL instead. seed() still exists in auth.js, now unused.
+const PUBLIC = new Set(["POST /api/login", "GET /api/session"]);
 
 // "/api/collections/:id/leads" vs "/api/collections/7/leads" -> { id: "7" }
 export function matchPath(pattern, path) {

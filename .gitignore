@@ -1,5 +1,8 @@
 # Secrets
 .env
+webapp/CREDENTIALS.md
+# Working files for the live deploy — password hashes + leads' phone numbers
+scratch/
 
 # Scrape outputs (may contain personal data — never commit)
 *.csv
@@ -27,9 +30,22 @@ PRD-dashboard.md
 
 # Python virtualenv
 .venv/
+
+# Reticle dev-only bundle (regenerate: npx esbuild reticle-dev-entry.js --bundle --format=esm --outfile=public/_reticle-dev.js)
+webapp/public/_reticle-dev.js
+# Reticle dev connect token is embedded in this file — never commit
+webapp/reticle-dev-entry.js
+webapp/.reticle.json
+.reticle/
 venv/
 __pycache__/
 *.pyc
+
+# Cloudflare local dev state — holds a local D1 copy that can contain real scraped leads
+webapp/.wrangler/
+
+# Claude Code agent worktrees — local tooling scratch, not project content
+.claude/worktrees/
 
 # Node
 node_modules/

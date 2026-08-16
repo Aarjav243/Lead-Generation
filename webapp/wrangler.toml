@@ -8,9 +8,10 @@ compatibility_flags = ["nodejs_compat"]  # csv-parse needs Node's Buffer (leadge
 directory = "./public"
 binding = "ASSETS"
 
-# database_id is a placeholder — `wrangler dev` / `--local` never reads it.
-# Replace with the real id from `wrangler d1 create leadflow` before deploying.
+# Real database, created 2026-08-16 (APAC). `wrangler dev` / `--local` still use
+# the local SQLite copy in .wrangler/state and never read this id.
+# binding stays "DB" — every query in the app is env.DB.prepare(...).
 [[d1_databases]]
 binding = "DB"
 database_name = "leadflow"
-database_id = "local-only-placeholder"
+database_id = "2c1673a4-936a-4a05-8f2d-4fdad0d6c49b"

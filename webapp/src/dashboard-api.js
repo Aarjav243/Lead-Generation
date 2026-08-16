@@ -11,7 +11,7 @@ const ST = {
   switched_off: "Phone switched off / out of coverage",
   not_picking: "Not picking",
   invalid: "Invalid number",
-  converted: "Pre-paid (advance received)",
+  converted: "Meeting finalized",
 };
 const STATUS_TO_KEY = Object.fromEntries(Object.entries(ST).map(([k, v]) => [v, k]));
 
@@ -39,29 +39,39 @@ async function people(env, role) {
 async function outreachPerformance({ params, env }) {
   const userId = Number(params.userId);
   const { results: yearRows } = await env.DB.prepare(
-    "SELECT DISTINCT CAST(strftime('%Y', updated_at) AS INTEGER) AS y FROM lead_status WHERE called_by = ? ORDER BY y"
+    `SELECT DISTINCT CAST(strftime('%Y', ls.updated_at) AS INTEGER) AS y
+       FROM lead_status ls JOIN leads l ON l.id = ls.lead_id
+      WHERE l.assigned_to = ? ORDER BY y`
   ).bind(userId).all();
 
   const years = [];
   for (const { y } of yearRows) {
     const { results: statusRows } = await env.DB.prepare(
-      `SELECT CAST(strftime('%m', updated_at) AS INTEGER) AS month, status, deal_value
-         FROM lead_status WHERE called_by = ? AND strftime('%Y', updated_at) = ?`
+      `SELECT CAST(strftime('%m', ls.updated_at) AS INTEGER) AS month, ls.status, ls.deal_value
+         FROM lead_status ls JOIN leads l ON l.id = ls.lead_id
+        WHERE l.assigned_to = ? AND strftime('%Y', ls.updated_at) = ?`
     ).bind(userId, String(y)).all();
 
     const { results: collectedRows } = await env.DB.prepare(
       `SELECT CAST(strftime('%m', pay.received_at) AS INTEGER) AS month, SUM(pay.amount) AS amt
          FROM payments pay
          JOIN projects p ON p.id = pay.project_id
-         JOIN lead_status ls ON ls.lead_id = p.lead_id
-        WHERE ls.called_by = ? AND strftime('%Y', pay.received_at) = ?
+         JOIN leads l ON l.id = p.lead_id
+        WHERE l.assigned_to = ? AND strftime('%Y', pay.received_at) = ?
+        GROUP BY month`
+    ).bind(userId, String(y)).all();
+
+    const { results: commissionRows } = await env.DB.prepare(
+      `SELECT CAST(strftime('%m', p.converted_at) AS INTEGER) AS month, SUM(p.commission) AS amt
+         FROM projects p JOIN leads l ON l.id = p.lead_id
+        WHERE l.assigned_to = ? AND strftime('%Y', p.converted_at) = ?
         GROUP BY month`
     ).bind(userId, String(y)).all();
 
     const rows = {};
     for (let m = 1; m <= 12; m++) {
       rows[m] = { month: m, month_name: MONTH_NAMES[m], hot: 0, cold: 0, not_interested: 0,
-        switched_off: 0, not_picking: 0, invalid: 0, converted: 0, revenue_finalized: 0, revenue_collected: 0 };
+        switched_off: 0, not_picking: 0, invalid: 0, converted: 0, revenue_finalized: 0, revenue_collected: 0, incentive: 0 };
     }
     for (const r of statusRows) {
       const key = STATUS_TO_KEY[r.status];
@@ -70,6 +80,7 @@ async function outreachPerformance({ params, env }) {
       if (key === "converted") rows[r.month].revenue_finalized += r.deal_value || 0;
     }
     for (const r of collectedRows) if (rows[r.month]) rows[r.month].revenue_collected = r.amt || 0;
+    for (const r of commissionRows) if (rows[r.month]) rows[r.month].incentive = r.amt || 0;
 
     years.push({ year: y, rows: Object.values(rows) });
   }
@@ -84,6 +95,7 @@ async function projectsSummary({ env }) {
     `SELECT pa.user_id,
             SUM(CASE WHEN p.work_status = 'Completed & payment received' THEN 1 ELSE 0 END) AS delivered,
             SUM(CASE WHEN p.work_status = 'Working on project' THEN 1 ELSE 0 END) AS continuing,
+            SUM(CASE WHEN p.work_status = 'Work done, payment not received' THEN 1 ELSE 0 END) AS payment_not_received,
             SUM(MAX(p.total_amount - COALESCE(pay.collected, 0), 0)) AS outstanding
        FROM project_assignees pa
        JOIN projects p ON p.id = pa.project_id
@@ -97,6 +109,7 @@ async function projectsSummary({ env }) {
     display_name: u.display_name,
     delivered: byUser[u.id]?.delivered || 0,
     continuing: byUser[u.id]?.continuing || 0,
+    payment_not_received: byUser[u.id]?.payment_not_received || 0,
     outstanding: byUser[u.id]?.outstanding || 0,
   }));
 }
@@ -104,11 +117,14 @@ async function projectsSummary({ env }) {
 async function projectsList({ env }) {
   const { results } = await env.DB.prepare(
     `SELECT p.id, l.name AS lead_name, p.kind, p.description, p.work_status, p.deadline,
+            p.total_amount, COALESCE(pay.paid, 0) AS amount_paid,
             GROUP_CONCAT(u.display_name, ', ') AS handled_by
        FROM projects p
        JOIN leads l ON l.id = p.lead_id
        LEFT JOIN project_assignees pa ON pa.project_id = p.id
        LEFT JOIN users u ON u.id = pa.user_id
+       LEFT JOIN (SELECT project_id, SUM(amount) AS paid FROM payments GROUP BY project_id) pay
+              ON pay.project_id = p.id
       GROUP BY p.id
       ORDER BY (p.deadline IS NULL), p.deadline ASC`
   ).all();
@@ -124,26 +140,22 @@ async function setDeadline({ params, body, env }) {
 // ---- D3 — salaries -----------------------------------------------------------------
 
 async function salariesGrid({ params, env }) {
-  const { team, year } = params;
-  if (team !== "outreach" && team !== "core") throw bad("team must be outreach or core");
+  const { year } = params;
   const months = monthsForYear(year);
-  const team_people = await people(env, team);
+  const team_people = await people(env, "outreach");
 
   const { results: paidRows } = await env.DB.prepare(
-    "SELECT user_id, month, amount, paid FROM salaries WHERE year = ?"
+    "SELECT user_id, month, paid FROM salaries WHERE year = ?"
   ).bind(Number(year)).all();
   const paidByKey = Object.fromEntries(paidRows.map((r) => [`${r.user_id}-${r.month}`, r]));
 
-  let computedByKey = {};
-  if (team === "outreach") {
-    const { results } = await env.DB.prepare(
-      `SELECT ls.called_by AS user_id, CAST(strftime('%m', p.converted_at) AS INTEGER) AS month, SUM(p.commission) AS amt
-         FROM projects p JOIN lead_status ls ON ls.lead_id = p.lead_id
-        WHERE strftime('%Y', p.converted_at) = ?
-        GROUP BY ls.called_by, month`
-    ).bind(String(year)).all();
-    computedByKey = Object.fromEntries(results.map((r) => [`${r.user_id}-${r.month}`, r.amt || 0]));
-  }
+  const { results: commissionRows } = await env.DB.prepare(
+    `SELECT l.assigned_to AS user_id, CAST(strftime('%m', p.converted_at) AS INTEGER) AS month, SUM(p.commission) AS amt
+       FROM projects p JOIN leads l ON l.id = p.lead_id
+      WHERE strftime('%Y', p.converted_at) = ?
+      GROUP BY l.assigned_to, month`
+  ).bind(String(year)).all();
+  const computedByKey = Object.fromEntries(commissionRows.map((r) => [`${r.user_id}-${r.month}`, r.amt || 0]));
 
   return {
     months: months.map((m) => ({ month: m, month_name: MONTH_NAMES[m] })),
@@ -152,8 +164,7 @@ async function salariesGrid({ params, env }) {
       display_name: u.display_name,
       cells: months.map((m) => {
         const key = `${u.id}-${m}`;
-        const amount = team === "outreach" ? (computedByKey[key] || 0) : (paidByKey[key]?.amount ?? null);
-        return { month: m, amount, paid: !!paidByKey[key]?.paid };
+        return { month: m, amount: computedByKey[key] || 0, paid: !!paidByKey[key]?.paid };
       }),
     })),
   };
@@ -170,23 +181,6 @@ async function toggleSalaryPaid({ params, env }) {
   } else {
     await env.DB.prepare("INSERT INTO salaries (user_id, year, month, paid) VALUES (?, ?, ?, 1)")
       .bind(userId, year, month).run();
-  }
-  return { ok: true };
-}
-
-async function setCoreSalaryAmount({ params, body, env }) {
-  const amount = Number(body?.amount);
-  if (!Number.isFinite(amount)) throw bad("amount must be a number");
-  const { year, userId, month } = params;
-  const existing = await env.DB.prepare(
-    "SELECT paid FROM salaries WHERE user_id = ? AND year = ? AND month = ?"
-  ).bind(userId, year, month).first();
-  if (existing) {
-    await env.DB.prepare("UPDATE salaries SET amount = ? WHERE user_id = ? AND year = ? AND month = ?")
-      .bind(amount, userId, year, month).run();
-  } else {
-    await env.DB.prepare("INSERT INTO salaries (user_id, year, month, amount, paid) VALUES (?, ?, ?, ?, 0)")
-      .bind(userId, year, month, amount).run();
   }
   return { ok: true };
 }
@@ -244,7 +238,6 @@ export const routes = {
   "PATCH /api/core/dashboard/projects/:id/deadline": setDeadline,
   "GET /api/core/dashboard/salaries/:team/:year": salariesGrid,
   "POST /api/core/dashboard/salaries/:year/:userId/:month/toggle": toggleSalaryPaid,
-  "PATCH /api/core/dashboard/salaries/core/:year/:userId/:month": setCoreSalaryAmount,
   "GET /api/core/dashboard/expenses/:year": expensesGrid,
   "PATCH /api/core/dashboard/expenses/:year/:month": setAiFees,
 };

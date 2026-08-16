@@ -2,7 +2,7 @@
 -- Money rules that the tables encode:
 --   * amount actually collected is NOT a column — it is SUM(payments.amount),
 --     so "collected in month X" is answerable without a second source of truth.
---   * projects.commission is 10% of the deal value, LOCKED at conversion time
+--   * projects.commission is a slab lookup on the deal value, LOCKED at conversion time
 --     (projects.converted_at). It never moves afterwards, even if the client underpays.
 --   * expenses stores only ai_fees; outreach team fees are computed from commissions.
 
@@ -52,7 +52,14 @@ CREATE TABLE leads (
   area          TEXT,
   city          TEXT,
   state         TEXT,
-  assigned_to   INTEGER REFERENCES users(id)  -- outreach person who owns this lead; NULL = unassigned
+  assigned_to   INTEGER REFERENCES users(id), -- outreach person who owns this lead; NULL = unassigned
+  owner_name         TEXT,
+  available_timings  TEXT,
+  service_wanted      TEXT,
+  note                TEXT,
+  meeting_link        TEXT,
+  meeting_date        TEXT,
+  meeting_time        TEXT
 );
 CREATE INDEX idx_leads_collection ON leads(collection_id);
 CREATE INDEX idx_leads_assigned ON leads(assigned_to);
@@ -76,14 +83,14 @@ CREATE TABLE scrape_jobs (
 CREATE TABLE lead_status (
   lead_id    INTEGER PRIMARY KEY REFERENCES leads(id),
   status     TEXT NOT NULL,             -- Hot lead / Cold lead / Not interested / Not picking /
-                                        -- Phone switched off / Invalid number / Pre-paid
-  called_by  INTEGER REFERENCES users(id),
-  deal_value REAL,
+                                        -- Phone switched off / Invalid number / Meeting finalized
+  called_by  INTEGER REFERENCES users(id),  -- history only; attribution moved to leads.assigned_to
+  deal_value REAL,                          -- history only; deal value now entered on the project
   updated_at TEXT NOT NULL,
   updated_by INTEGER REFERENCES users(id)
 );
 
--- Created the moment a lead is marked Pre-paid. Core team only.
+-- Created when core closes a "Meeting finalized" lead in the Meetings Finalized section.
 CREATE TABLE projects (
   id           INTEGER PRIMARY KEY,
   lead_id      INTEGER NOT NULL UNIQUE REFERENCES leads(id),
@@ -94,7 +101,8 @@ CREATE TABLE projects (
                                         -- Work done, payment not received
   future_scope TEXT,
   deadline     TEXT,
-  commission   REAL NOT NULL DEFAULT 0, -- locked at conversion, owed to lead_status.called_by
+  commission   REAL NOT NULL DEFAULT 0, -- slab lookup on total_amount, locked at conversion,
+                                        -- owed to leads.assigned_to
   converted_at TEXT NOT NULL            -- which month the commission lands in
 );
 
