@@ -1,0 +1,4 @@
+# Force LF line endings on checkout regardless of the developer's git config.
+# Windows' default core.autocrlf=true converts .sql to CRLF, which crashes
+# wrangler's local D1 executor ("internal error" on `npm run db`).
+* text=auto eol=lf
