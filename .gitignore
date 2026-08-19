@@ -1,45 +1,12 @@
-# Secrets
-.env
-webapp/CREDENTIALS.md
-# Working files for the live deploy — password hashes + leads' phone numbers
-scratch/
-
-# Scrape outputs (may contain personal data — never commit)
-*.csv
-!examples/*.csv
-results-*.json
-out/
-output/
-gmaps-output/
-data/
-*.log
-
-# Your personal outreach campaign config (see dashboard-manifest.example.json)
-dashboard-manifest.json
-whatsapp-qr.png
-whatsapp-sent-log.csv
-
-# Private session notes (real phone numbers / campaign specifics — not for public repo)
-HANDOFF.md
-HANDOFF-dashboard.md
-PRD-dashboard.md
-
-# WhatsApp Web session — holds live login credentials, never commit
-.wwebjs_auth/
-.wwebjs_cache/
-
 # Python virtualenv
 .venv/
-
-# Reticle dev-only bundle (regenerate: npx esbuild reticle-dev-entry.js --bundle --format=esm --outfile=public/_reticle-dev.js)
-webapp/public/_reticle-dev.js
-# Reticle dev connect token is embedded in this file — never commit
-webapp/reticle-dev-entry.js
-webapp/.reticle.json
-.reticle/
 venv/
 __pycache__/
 *.pyc
+
+# Reticle dev-only bundle (regenerate: npx esbuild reticle-dev-entry.js --bundle --format=esm --outfile=public/_reticle-dev.js)
+webapp/public/_reticle-dev.js
+.reticle/
 
 # Cloudflare local dev state — holds a local D1 copy that can contain real scraped leads
 webapp/.wrangler/

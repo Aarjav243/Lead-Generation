@@ -1,0 +1,27 @@
+▶ Geocoding "Durg, Chhattisgarh"…
+  → 21.1982964, 81.4007922
+ℹ Email extraction is ON (visits each business website; a bit slower). Use --no-email for a fast run.
+⚠️  Heads-up: this is a large job (high depth or many keywords).
+    Running it back-to-back without proxies can get your IP temporarily rate-limited by
+    Google (clears in minutes–hours; returns empty/failed jobs meanwhile). For big or
+    repeated runs, add proxies. Proceeding…
+
+▶ Creating job: 1 keyword(s) @ 21.1982964,81.4007922 depth=20 email=True
+    • clinics in Durg Chhattisgarh
+  job id: 02460b1a-9708-4d2a-86ef-cf881dd84ac1
+▶ Polling…
+  status: pending    (attempt 1)  status: working    (attempt 2)  status: working    (attempt 3)  status: working    (attempt 4)  status: working    (attempt 5)  status: working    (attempt 6)  status: working    (attempt 7)  status: working    (attempt 8)  status: working    (attempt 9)  status: working    (attempt 10)  status: working    (attempt 11)  status: working    (attempt 12)  status: working    (attempt 13)  status: working    (attempt 14)  status: working    (attempt 15)  status: working    (attempt 16)  status: working    (attempt 17)  status: working    (attempt 18)  status: working    (attempt 19)  status: working    (attempt 20)  status: working    (attempt 21)  status: working    (attempt 22)  status: working    (attempt 23)  status: working    (attempt 24)  status: working    (attempt 25)  status: working    (attempt 26)  status: working    (attempt 27)  status: working    (attempt 28)  status: working    (attempt 29)  status: working    (attempt 30)  status: working    (attempt 31)  status: working    (attempt 32)  status: working    (attempt 33)  status: working    (attempt 34)  status: working    (attempt 35)  status: working    (attempt 36)  status: working    (attempt 37)  status: working    (attempt 38)  status: working    (attempt 39)  status: working    (attempt 40)  status: working    (attempt 41)  status: working    (attempt 42)  status: working    (attempt 43)  status: working    (attempt 44)  status: working    (attempt 45)  status: working    (attempt 46)  status: working    (attempt 47)  status: working    (attempt 48)  status: working    (attempt 49)  status: working    (attempt 50)  status: working    (attempt 51)  status: working    (attempt 52)  status: working    (attempt 53)  status: working    (attempt 54)  status: working    (attempt 55)  status: working    (attempt 56)  status: working    (attempt 57)  status: working    (attempt 58)  status: working    (attempt 59)  status: working    (attempt 60)  status: working    (attempt 61)  status: working    (attempt 62)  status: working    (attempt 63)  status: working    (attempt 64)  status: working    (attempt 65)  status: working    (attempt 66)  status: working    (attempt 67)  status: working    (attempt 68)  status: working    (attempt 69)  status: working    (attempt 70)  status: working    (attempt 71)  status: working    (attempt 72)  status: working    (attempt 73)  status: working    (attempt 74)  status: working    (attempt 75)  status: working    (attempt 76)  status: ok         (attempt 77)
+✓ Done — 54 businesses (fields: title, phone, emails, website, category, address, review_rating, review_count).
+Traceback (most recent call last):
+  File "C:\Users\aarja\OneDrive\Desktop\Lead Generator\scripts\scrape.py", line 387, in <module>
+    main()
+  File "C:\Users\aarja\OneDrive\Desktop\Lead Generator\scripts\scrape.py", line 373, in main
+    w.writerows(results)
+  File "C:\Users\aarja\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\csv.py", line 157, in writerows
+    return self.writer.writerows(map(self._dict_to_list, rowdicts))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aarja\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode characters in position 1-2: character maps to <undefined>
+EXIT:1

@@ -1,0 +1,28 @@
+{
+  "clinic": {
+    "durg": {
+      "leadsFile": "durg-clinics.csv",
+      "noWebsiteFile": "durg-clinics-no-website.csv",
+      "sentLogFile": "whatsapp-sent-log.csv"
+    }
+  },
+  "education": {
+    "dwarkamor": {
+      "leadsFile": "dwarkamor-education.csv",
+      "noWebsiteFile": "dwarkamor-education-no-website.csv",
+      "sentLogFile": "whatsapp-sent-log.csv"
+    }
+  },
+  "restaurant": {
+    "hadapsar": {
+      "leadsFile": "hadapsar-restaurants.csv",
+      "noWebsiteFile": "hadapsar-restaurants-no-website.csv",
+      "sentLogFile": "whatsapp-sent-log.csv"
+    },
+    "delhi": {
+      "leadsFile": "delhi-restaurants.csv",
+      "noWebsiteFile": "delhi-restaurants-no-website.csv",
+      "sentLogFile": "whatsapp-sent-log.csv"
+    }
+  }
+}
